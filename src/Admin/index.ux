@@ -48,6 +48,11 @@
           focusable="true"
         >直播源管理</text>
         <text
+          class="menu-item {{activeMenu === 'test' ? 'active' : ''}}"
+          onclick="handleMenuChange('test')"
+          focusable="true"
+        >测试数据</text>
+        <text
           class="menu-item {{activeMenu === 'about' ? 'active' : ''}}"
           onclick="handleMenuChange('about')"
           focusable="true"
@@ -90,6 +95,41 @@
           <text class="save-btn" onclick="handleSaveLive" focusable="true">保存配置</text>
           <text class="import-btn" onclick="handleImportLive" focusable="true">导入直播源</text>
           <text class="import-result" if="{{importResult}}">{{importResult}}</text>
+        </div>
+
+        <div class="test-data" if="{{activeMenu === 'test'}}">
+          <text class="section-title">测试数据统计</text>
+          
+          <div class="test-controls">
+            <text class="control-btn" onclick="handleToggleTestMode" focusable="true">
+              {{testMode ? '关闭测试模式' : '开启测试模式'}}
+            </text>
+            <text class="control-btn" onclick="handleRefreshTestData" focusable="true">刷新数据</text>
+            <text class="control-btn" onclick="handleClearTestData" focusable="true">清空数据</text>
+            <text class="control-btn" onclick="handleExportTestData" focusable="true">导出数据</text>
+          </div>
+
+          <div class="test-summary" if="{{testSummary}}">
+            <text class="summary-title">测试概览</text>
+            <text class="summary-item">测试模式: {{testSummary.testMode ? '开启' : '关闭'}}</text>
+            <text class="summary-item">运行时长: {{testSummary.duration}}</text>
+            <text class="summary-item">总日志数: {{testSummary.totalLogs}}</text>
+            <text class="summary-item">视频播放次数: {{testSummary.stats.videoPlays}}</text>
+            <text class="summary-item">直播播放次数: {{testSummary.stats.livePlays}}</text>
+            <text class="summary-item">API调用次数: {{testSummary.stats.apiCalls}}</text>
+            <text class="summary-item">错误次数: {{testSummary.stats.errors}}</text>
+            <text class="summary-item" if="{{testSummary.startTime}}">开始时间: {{testSummary.startTime}}</text>
+          </div>
+
+          <div class="recent-errors" if="{{testSummary && testSummary.recentErrors.length > 0}}">
+            <text class="error-title">最近错误 (最多5条)</text>
+            <div class="error-item" for="{{error in testSummary.recentErrors}}">
+              <text class="error-time">{{error.time}}</text>
+              <text class="error-message">{{error.message}}</text>
+            </div>
+          </div>
+
+          <text class="test-status" if="{{testStatusMsg}}">{{testStatusMsg}}</text>
         </div>
 
         <div class="about-info" if="{{activeMenu === 'about'}}">
@@ -318,6 +358,89 @@
   line-height: 40px;
 }
 
+.test-controls {
+  flex-direction: row;
+  margin-bottom: 30px;
+}
+
+.control-btn {
+  padding: 15px 30px;
+  margin-right: 15px;
+  font-size: 26px;
+  color: #ffffff;
+  background-color: #4a90e2;
+  border-radius: 8px;
+  text-align: center;
+}
+
+.control-btn:focus {
+  background-color: #357abd;
+}
+
+.test-summary {
+  flex-direction: column;
+  padding: 30px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  margin-bottom: 30px;
+}
+
+.summary-title {
+  font-size: 32px;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.summary-item {
+  font-size: 26px;
+  color: #cccccc;
+  margin-bottom: 15px;
+  line-height: 36px;
+}
+
+.recent-errors {
+  flex-direction: column;
+  padding: 30px;
+  background-color: #2a1a1a;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
+
+.error-title {
+  font-size: 32px;
+  color: #ff6b6b;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.error-item {
+  flex-direction: column;
+  padding: 15px;
+  margin-bottom: 15px;
+  background-color: #3a2a2a;
+  border-radius: 8px;
+}
+
+.error-time {
+  font-size: 22px;
+  color: #999999;
+  margin-bottom: 8px;
+}
+
+.error-message {
+  font-size: 24px;
+  color: #ffcccc;
+  line-height: 32px;
+}
+
+.test-status {
+  font-size: 26px;
+  color: #66ff66;
+  margin-top: 20px;
+  text-align: center;
+}
+
 .footer {
   flex-direction: row;
   justify-content: space-around;
@@ -350,6 +473,7 @@
 import storage from '@system.storage'
 import router from '@system.router'
 import api from '../services/api.js'
+import testLogger from '../services/testLogger.js'
 
 export default {
   data: {
@@ -361,12 +485,23 @@ export default {
     apiUrl: '',
     liveSourceUrl: '',
     testResult: '',
-    importResult: ''
+    importResult: '',
+    testMode: false,
+    testSummary: null,
+    testStatusMsg: ''
   },
 
   onInit() {
     this.checkLoginStatus()
     this.loadConfig()
+    this.loadTestData()
+  },
+
+  loadTestData() {
+    this.testMode = testLogger.isTestMode()
+    if (this.testMode) {
+      this.testSummary = testLogger.getSummary()
+    }
   },
 
   checkLoginStatus() {
@@ -424,11 +559,53 @@ export default {
 
   handleLogout() {
     storage.delete({
-      key: 'admin_token'
+      key: 'adminLoggedIn'
     })
     this.isLoggedIn = false
     this.username = ''
     this.password = ''
+  },
+
+  handleToggleTestMode() {
+    this.testMode = !this.testMode
+    testLogger.setTestMode(this.testMode)
+    
+    if (this.testMode) {
+      this.testStatusMsg = '测试模式已开启'
+      this.loadTestData()
+    } else {
+      this.testStatusMsg = '测试模式已关闭'
+      this.testSummary = null
+    }
+    
+    setTimeout(() => {
+      this.testStatusMsg = ''
+    }, 3000)
+  },
+
+  handleRefreshTestData() {
+    this.testStatusMsg = '正在刷新测试数据...'
+    
+    testLogger.clearLogs()
+    
+    setTimeout(() => {
+      this.loadTestData()
+      this.testStatusMsg = '测试数据已刷新'
+      
+      setTimeout(() => {
+        this.testStatusMsg = ''
+      }, 3000)
+    }, 500)
+  },
+
+  handleClearTestData() {
+    testLogger.clearLogs()
+    this.testSummary = null
+    this.testStatusMsg = '测试数据已清除'
+    
+    setTimeout(() => {
+      this.testStatusMsg = ''
+    }, 3000)
   },
 
   handleMenuChange(menu) {

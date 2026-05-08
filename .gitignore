@@ -24,3 +24,22 @@ coverage/
 
 Thumbs.db
 Desktop.ini
+
+# MacCMS runtime and cache
+maccms/runtime/*
+!maccms/runtime/.gitignore
+maccms/upload/*
+!maccms/upload/.gitignore
+maccms-official/runtime/*
+!maccms-official/runtime/.gitignore
+maccms-official/upload/*
+!maccms-official/upload/.gitignore
+
+# MacCMS backup
+maccms_backup/
+
+# Docker volumes
+mysql_data/
+
+# Trae IDE
+.claude/

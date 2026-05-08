@@ -1,0 +1,16 @@
+﻿param([string]$Action="status")
+$ProjectRoot="D:\GitCangku2\quicktv-app-project"
+function Check-Choco{try{choco --version|Out-Null;return $true}catch{return $false}}
+function Check-DockerInstalled{try{$r=choco list docker-desktop --exact;return $r -match "docker-desktop"}catch{return $false}}
+function Check-DockerRunning{try{$env:Path=[System.Environment]::GetEnvironmentVariable("Path","Machine")+";"+[System.Environment]::GetEnvironmentVariable("Path","User");docker info 2>&1|Out-Null;return $LASTEXITCODE -eq 0}catch{return $false}}
+function Show-Status{Write-Host "
+=== 系统状态 ===" -ForegroundColor Cyan;Write-Host "Chocolatey: " -NoNewline;if(Check-Choco){Write-Host "已安装" -ForegroundColor Green}else{Write-Host "未安装" -ForegroundColor Red};Write-Host "Docker: " -NoNewline;if(Check-DockerInstalled){Write-Host "已安装" -ForegroundColor Green}else{Write-Host "未安装" -ForegroundColor Red};if(Check-DockerInstalled){Write-Host "Docker服务: " -NoNewline;if(Check-DockerRunning){Write-Host "运行中" -ForegroundColor Green;Set-Location $ProjectRoot;docker compose ps 2>$null}else{Write-Host "未运行" -ForegroundColor Red}};Write-Host ""}
+function Start-Services{Write-Host "
+=== 启动服务 ===" -ForegroundColor Cyan;if(-not(Check-DockerInstalled)){Write-Host "Docker未安装" -ForegroundColor Red;exit 1};$env:Path=[System.Environment]::GetEnvironmentVariable("Path","Machine")+";"+[System.Environment]::GetEnvironmentVariable("Path","User");if(-not(Check-DockerRunning)){Write-Host "启动Docker..." -ForegroundColor Yellow;Start-Process "C:\Program Files\Docker\Docker\Docker Desktop.exe" -ErrorAction SilentlyContinue;$i=0;while($i -lt 60){if(Check-DockerRunning){Write-Host "Docker已就绪" -ForegroundColor Green;break};$i++;if($i%10 -eq 0){Write-Host "等待...($i/60)" -ForegroundColor Gray};Start-Sleep -Seconds 3};if($i -ge 60){Write-Host "超时" -ForegroundColor Red;exit 1}}else{Write-Host "Docker已运行" -ForegroundColor Green};Write-Host "启动容器..." -ForegroundColor Yellow;Set-Location $ProjectRoot;docker compose up -d;if($LASTEXITCODE -eq 0){Write-Host "成功！API: http://localhost:8080" -ForegroundColor Green;docker compose ps}else{Write-Host "失败" -ForegroundColor Red;exit 1}}
+function Stop-Services{Write-Host "
+=== 停止服务 ===" -ForegroundColor Cyan;if(-not(Check-DockerRunning)){Write-Host "Docker未运行" -ForegroundColor Yellow;return};Set-Location $ProjectRoot;docker compose down;Write-Host "已停止" -ForegroundColor Green}
+function Show-Logs{Write-Host "
+=== 服务日志 ===" -ForegroundColor Cyan;if(-not(Check-DockerRunning)){Write-Host "Docker未运行" -ForegroundColor Yellow;return};Set-Location $ProjectRoot;docker compose logs --tail=50}
+function Install-Docker{Write-Host "
+=== 安装Docker ===" -ForegroundColor Cyan;if(-not(Check-Choco)){Write-Host "Chocolatey未安装" -ForegroundColor Red;exit 1};if(Check-DockerInstalled){Write-Host "Docker已安装" -ForegroundColor Green}else{choco install docker-desktop -y;if($LASTEXITCODE -eq 0){Write-Host "安装成功！需要重启" -ForegroundColor Green}else{Write-Host "安装失败" -ForegroundColor Red;exit 1}}}
+switch($Action){"status"{Show-Status}"start"{Start-Services}"stop"{Stop-Services}"logs"{Show-Logs}"install"{Install-Docker}}

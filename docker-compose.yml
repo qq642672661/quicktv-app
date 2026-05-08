@@ -1,0 +1,48 @@
+version: '3.8'
+
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: quicktv-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: maccms10
+      MYSQL_USER: maccms
+      MYSQL_PASSWORD: maccms123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+      - ./maccms-official/application/install/sql/install.sql:/docker-entrypoint-initdb.d/install.sql
+    command: --default-authentication-plugin=mysql_native_password
+    networks:
+      - quicktv-network
+
+  maccms:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: quicktv-maccms
+    restart: always
+    environment:
+      DB_HOST: mysql
+      DB_NAME: maccms10
+      DB_USER: maccms
+      DB_PASS: maccms123
+      DB_PORT: 3306
+    ports:
+      - "8080:80"
+    depends_on:
+      - mysql
+    volumes:
+      - ./maccms-official:/var/www/html
+    networks:
+      - quicktv-network
+
+volumes:
+  mysql_data:
+
+networks:
+  quicktv-network:
+    driver: bridge

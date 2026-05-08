@@ -1,7 +1,10 @@
+import testLogger from './testLogger.js'
+
 const API_BASE_URL = 'http://your-server-ip:3000/api'
 
 export default {
   async request(url, options = {}) {
+    const startTime = Date.now()
     const token = this.getToken()
     const headers = {
       'Content-Type': 'application/json',
@@ -20,12 +23,19 @@ export default {
       
       const data = await response.json()
       
+      const duration = Date.now() - startTime
+      testLogger.logApiCall(url, options.method || 'GET', duration, response.ok)
+      
       if (!response.ok) {
+        testLogger.logError(new Error(data.message || '请求失败'), `API: ${url}`)
         throw new Error(data.message || '请求失败')
       }
       
       return data
     } catch (error) {
+      const duration = Date.now() - startTime
+      testLogger.logApiCall(url, options.method || 'GET', duration, false)
+      testLogger.logError(error, `API: ${url}`)
       console.error('API请求错误:', error)
       throw error
     }
