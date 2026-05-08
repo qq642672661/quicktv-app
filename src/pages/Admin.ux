@@ -1,0 +1,516 @@
+<template>
+  <div class="admin-page">
+    <div class="header">
+      <text class="back-btn" onclick="handleBack" focusable="true">← 返回</text>
+      <text class="title">后台管理</text>
+    </div>
+
+    <div class="content" if="{{!isLoggedIn}}">
+      <div class="login-box">
+        <text class="login-title">管理员登录</text>
+        <div class="form-group">
+          <text class="label">用户名</text>
+          <input
+            type="text"
+            class="input"
+            placeholder="请输入用户名"
+            value="{{username}}"
+            onchange="handleUsernameChange"
+            focusable="true"
+          />
+        </div>
+        <div class="form-group">
+          <text class="label">密码</text>
+          <input
+            type="password"
+            class="input"
+            placeholder="请输入密码"
+            value="{{password}}"
+            onchange="handlePasswordChange"
+            focusable="true"
+          />
+        </div>
+        <text class="error-msg" if="{{errorMsg}}">{{errorMsg}}</text>
+        <text class="login-btn" onclick="handleLogin" focusable="true">登录</text>
+      </div>
+    </div>
+
+    <div class="content" if="{{isLoggedIn}}">
+      <div class="admin-menu">
+        <text
+          class="menu-item {{activeMenu === 'api' ? 'active' : ''}}"
+          onclick="handleMenuChange('api')"
+          focusable="true"
+        >API配置</text>
+        <text
+          class="menu-item {{activeMenu === 'live' ? 'active' : ''}}"
+          onclick="handleMenuChange('live')"
+          focusable="true"
+        >直播源管理</text>
+        <text
+          class="menu-item {{activeMenu === 'about' ? 'active' : ''}}"
+          onclick="handleMenuChange('about')"
+          focusable="true"
+        >关于</text>
+        <text class="logout-btn" onclick="handleLogout" focusable="true">退出登录</text>
+      </div>
+
+      <div class="admin-content">
+        <div class="api-config" if="{{activeMenu === 'api'}}">
+          <text class="section-title">MacCMS API 配置</text>
+          <div class="form-group">
+            <text class="label">API地址</text>
+            <input
+              type="text"
+              class="input"
+              placeholder="请输入MacCMS API地址"
+              value="{{apiUrl}}"
+              onchange="handleApiUrlChange"
+              focusable="true"
+            />
+          </div>
+          <text class="save-btn" onclick="handleSaveApi" focusable="true">保存配置</text>
+          <text class="test-btn" onclick="handleTestApi" focusable="true">测试连接</text>
+          <text class="test-result" if="{{testResult}}">{{testResult}}</text>
+        </div>
+
+        <div class="live-config" if="{{activeMenu === 'live'}}">
+          <text class="section-title">直播源配置</text>
+          <div class="form-group">
+            <text class="label">直播源地址 (M3U格式)</text>
+            <input
+              type="text"
+              class="input"
+              placeholder="请输入直播源地址"
+              value="{{liveSourceUrl}}"
+              onchange="handleLiveSourceChange"
+              focusable="true"
+            />
+          </div>
+          <text class="save-btn" onclick="handleSaveLive" focusable="true">保存配置</text>
+          <text class="import-btn" onclick="handleImportLive" focusable="true">导入直播源</text>
+          <text class="import-result" if="{{importResult}}">{{importResult}}</text>
+        </div>
+
+        <div class="about-info" if="{{activeMenu === 'about'}}">
+          <text class="section-title">关于 QuickTV</text>
+          <text class="info-text">版本: 1.0.0</text>
+          <text class="info-text">基于快应用开发的智能电视应用</text>
+          <text class="info-text">支持MacCMS视频点播和直播功能</text>
+          <text class="info-text">开发者: QuickTV Team</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <text
+        class="footer-btn"
+        onclick="handleTabChange('home')"
+        focusable="true"
+      >首页</text>
+      <text
+        class="footer-btn"
+        onclick="handleTabChange('live')"
+        focusable="true"
+      >直播</text>
+      <text
+        class="footer-btn active"
+        onclick="handleTabChange('admin')"
+        focusable="true"
+      >管理</text>
+    </div>
+  </div>
+</template>
+
+<style>
+.admin-page {
+  flex-direction: column;
+  width: 1920px;
+  height: 1080px;
+  background-color: #000000;
+}
+
+.header {
+  flex-direction: row;
+  align-items: center;
+  padding: 30px 60px;
+  background-color: #1a1a1a;
+}
+
+.back-btn {
+  font-size: 32px;
+  color: #ffffff;
+  padding: 10px 20px;
+  margin-right: 30px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.back-btn:focus {
+  background-color: #ff6b6b;
+}
+
+.title {
+  font-size: 40px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.content {
+  flex: 1;
+  flex-direction: column;
+  padding: 30px 60px;
+  overflow-y: scroll;
+}
+
+.login-box {
+  width: 600px;
+  margin: 100px auto;
+  padding: 60px;
+  background-color: #1a1a1a;
+  border-radius: 12px;
+  flex-direction: column;
+}
+
+.login-title {
+  font-size: 42px;
+  color: #ffffff;
+  font-weight: bold;
+  text-align: center;
+  margin-bottom: 40px;
+}
+
+.form-group {
+  flex-direction: column;
+  margin-bottom: 30px;
+}
+
+.label {
+  font-size: 28px;
+  color: #cccccc;
+  margin-bottom: 10px;
+}
+
+.input {
+  height: 60px;
+  padding: 0 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border-width: 2px;
+  border-color: #3a3a3a;
+}
+
+.input:focus {
+  border-color: #ff6b6b;
+}
+
+.error-msg {
+  font-size: 24px;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+  text-align: center;
+}
+
+.login-btn {
+  height: 60px;
+  font-size: 32px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  text-align: center;
+  lines: 1;
+}
+
+.login-btn:focus {
+  background-color: #ff5252;
+}
+
+.admin-menu {
+  flex-direction: row;
+  padding: 20px 0;
+  border-bottom-width: 1px;
+  border-bottom-color: #2a2a2a;
+  margin-bottom: 30px;
+}
+
+.menu-item {
+  padding: 15px 40px;
+  margin-right: 20px;
+  font-size: 28px;
+  color: #999999;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.menu-item:focus {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.menu-item.active {
+  color: #ffffff;
+  background-color: #ff6b6b;
+}
+
+.logout-btn {
+  margin-left: auto;
+  padding: 15px 40px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #666666;
+  border-radius: 8px;
+}
+
+.logout-btn:focus {
+  background-color: #777777;
+}
+
+.admin-content {
+  flex: 1;
+  flex-direction: column;
+}
+
+.section-title {
+  font-size: 36px;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 30px;
+}
+
+.save-btn,
+.test-btn,
+.import-btn {
+  width: 200px;
+  height: 60px;
+  margin-right: 20px;
+  margin-top: 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  text-align: center;
+  lines: 1;
+}
+
+.save-btn:focus,
+.test-btn:focus,
+.import-btn:focus {
+  background-color: #ff5252;
+}
+
+.test-result,
+.import-result {
+  font-size: 26px;
+  color: #66ff66;
+  margin-top: 20px;
+}
+
+.about-info {
+  flex-direction: column;
+}
+
+.info-text {
+  font-size: 28px;
+  color: #cccccc;
+  margin-bottom: 20px;
+  line-height: 40px;
+}
+
+.footer {
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 100px;
+  background-color: #1a1a1a;
+  border-top-width: 1px;
+  border-top-color: #2a2a2a;
+}
+
+.footer-btn {
+  flex: 1;
+  height: 100px;
+  font-size: 28px;
+  color: #999999;
+  text-align: center;
+  lines: 1;
+}
+
+.footer-btn:focus {
+  background-color: #2a2a2a;
+}
+
+.footer-btn.active {
+  color: #ff6b6b;
+}
+</style>
+
+<script>
+import storage from '@system.storage'
+import router from '@system.router'
+import api from '../services/api.js'
+
+export default {
+  data: {
+    isLoggedIn: false,
+    username: '',
+    password: '',
+    errorMsg: '',
+    activeMenu: 'api',
+    apiUrl: '',
+    liveSourceUrl: '',
+    testResult: '',
+    importResult: ''
+  },
+
+  onInit() {
+    this.checkLoginStatus()
+    this.loadConfig()
+  },
+
+  checkLoginStatus() {
+    storage.get({
+      key: 'admin_token',
+      success: (data) => {
+        if (data) {
+          this.isLoggedIn = true
+        }
+      }
+    })
+  },
+
+  loadConfig() {
+    storage.get({
+      key: 'api_url',
+      success: (data) => {
+        this.apiUrl = data || ''
+      }
+    })
+    
+    storage.get({
+      key: 'live_source_url',
+      success: (data) => {
+        this.liveSourceUrl = data || ''
+      }
+    })
+  },
+
+  handleUsernameChange(e) {
+    this.username = e.value
+  },
+
+  handlePasswordChange(e) {
+    this.password = e.value
+  },
+
+  handleLogin() {
+    if (!this.username || !this.password) {
+      this.errorMsg = '请输入用户名和密码'
+      return
+    }
+
+    if (this.username === 'admin' && this.password === 'admin123') {
+      storage.set({
+        key: 'admin_token',
+        value: 'logged_in'
+      })
+      this.isLoggedIn = true
+      this.errorMsg = ''
+    } else {
+      this.errorMsg = '用户名或密码错误'
+    }
+  },
+
+  handleLogout() {
+    storage.delete({
+      key: 'admin_token'
+    })
+    this.isLoggedIn = false
+    this.username = ''
+    this.password = ''
+  },
+
+  handleMenuChange(menu) {
+    this.activeMenu = menu
+    this.testResult = ''
+    this.importResult = ''
+  },
+
+  handleApiUrlChange(e) {
+    this.apiUrl = e.value
+  },
+
+  handleSaveApi() {
+    storage.set({
+      key: 'api_url',
+      value: this.apiUrl,
+      success: () => {
+        this.testResult = 'API地址保存成功'
+      }
+    })
+  },
+
+  async handleTestApi() {
+    if (!this.apiUrl) {
+      this.testResult = '请先输入API地址'
+      return
+    }
+
+    try {
+      const response = await api.testConnection(this.apiUrl)
+      if (response.code === 1) {
+        this.testResult = '连接成功！'
+      } else {
+        this.testResult = '连接失败，请检查API地址'
+      }
+    } catch (error) {
+      this.testResult = '连接失败: ' + error.message
+    }
+  },
+
+  handleLiveSourceChange(e) {
+    this.liveSourceUrl = e.value
+  },
+
+  handleSaveLive() {
+    storage.set({
+      key: 'live_source_url',
+      value: this.liveSourceUrl,
+      success: () => {
+        this.importResult = '直播源地址保存成功'
+      }
+    })
+  },
+
+  async handleImportLive() {
+    if (!this.liveSourceUrl) {
+      this.importResult = '请先输入直播源地址'
+      return
+    }
+
+    try {
+      const response = await api.importLiveSource(this.liveSourceUrl)
+      if (response.code === 1) {
+        this.importResult = `导入成功！共导入 ${response.count} 个频道`
+      } else {
+        this.importResult = '导入失败，请检查直播源地址'
+      }
+    } catch (error) {
+      this.importResult = '导入失败: ' + error.message
+    }
+  },
+
+  handleBack() {
+    router.back()
+  },
+
+  handleTabChange(tab) {
+    if (tab === 'home') {
+      router.replace({ uri: 'pages/Home' })
+    } else if (tab === 'live') {
+      router.push({ uri: 'pages/Live' })
+    }
+  }
+}
+</script>

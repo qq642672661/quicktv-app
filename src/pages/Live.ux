@@ -1,0 +1,358 @@
+<template>
+  <div class="live-page">
+    <div class="header">
+      <text class="back-btn" onclick="handleBack" focusable="true">← 返回</text>
+      <text class="title">直播频道</text>
+      <div class="search-bar">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="搜索频道..."
+          value="{{searchKeyword}}"
+          onchange="handleSearchInput"
+          focusable="true"
+        />
+        <text class="search-btn" onclick="handleSearch" focusable="true">搜索</text>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="sidebar">
+        <text
+          class="category-item {{currentCategory === null ? 'active' : ''}}"
+          onclick="handleCategoryChange(null)"
+          focusable="true"
+        >全部频道</text>
+        <block for="{{categories}}">
+          <text
+            class="category-item {{currentCategory === $item ? 'active' : ''}}"
+            onclick="handleCategoryChange($item)"
+            focusable="true"
+          >{{$item}}</text>
+        </block>
+      </div>
+
+      <div class="main-content">
+        <div class="channel-grid" if="{{!loading && channels.length > 0}}">
+          <block for="{{channels}}">
+            <div
+              class="channel-card"
+              onclick="handleChannelClick($item)"
+              focusable="true"
+            >
+              <image class="channel-logo" src="{{$item.logo || '/common/default-channel.png'}}" />
+              <text class="channel-name">{{$item.name}}</text>
+              <text class="channel-category">{{$item.category}}</text>
+            </div>
+          </block>
+        </div>
+
+        <div class="loading" if="{{loading}}">
+          <text>加载中...</text>
+        </div>
+
+        <div class="empty" if="{{!loading && channels.length === 0}}">
+          <text>暂无频道</text>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer">
+      <text
+        class="footer-btn"
+        onclick="handleTabChange('home')"
+        focusable="true"
+      >首页</text>
+      <text
+        class="footer-btn active"
+        onclick="handleTabChange('live')"
+        focusable="true"
+      >直播</text>
+      <text
+        class="footer-btn"
+        onclick="handleTabChange('admin')"
+        focusable="true"
+      >管理</text>
+    </div>
+  </div>
+</template>
+
+<style>
+.live-page {
+  flex-direction: column;
+  width: 1920px;
+  height: 1080px;
+  background-color: #000000;
+}
+
+.header {
+  flex-direction: row;
+  align-items: center;
+  padding: 30px 60px;
+  background-color: #1a1a1a;
+}
+
+.back-btn {
+  font-size: 32px;
+  color: #ffffff;
+  padding: 10px 20px;
+  margin-right: 30px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.back-btn:focus {
+  background-color: #ff6b6b;
+}
+
+.title {
+  font-size: 40px;
+  color: #ffffff;
+  font-weight: bold;
+  margin-right: 40px;
+}
+
+.search-bar {
+  flex: 1;
+  flex-direction: row;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1;
+  height: 60px;
+  padding: 0 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border-width: 2px;
+  border-color: #3a3a3a;
+}
+
+.search-input:focus {
+  border-color: #ff6b6b;
+}
+
+.search-btn {
+  width: 120px;
+  height: 60px;
+  margin-left: 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  text-align: center;
+  lines: 1;
+}
+
+.search-btn:focus {
+  background-color: #ff5252;
+}
+
+.content {
+  flex: 1;
+  flex-direction: row;
+  overflow: hidden;
+}
+
+.sidebar {
+  width: 300px;
+  flex-direction: column;
+  padding: 30px 20px;
+  background-color: #1a1a1a;
+  overflow-y: scroll;
+}
+
+.category-item {
+  padding: 20px 30px;
+  margin-bottom: 15px;
+  font-size: 28px;
+  color: #999999;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.category-item:focus {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.category-item.active {
+  color: #ffffff;
+  background-color: #ff6b6b;
+}
+
+.main-content {
+  flex: 1;
+  flex-direction: column;
+  padding: 30px 60px;
+  overflow-y: scroll;
+}
+
+.channel-grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.channel-card {
+  width: 280px;
+  margin-right: 30px;
+  margin-bottom: 30px;
+  padding: 20px;
+  border-radius: 8px;
+  background-color: #1a1a1a;
+  flex-direction: column;
+  align-items: center;
+}
+
+.channel-card:focus {
+  border-width: 3px;
+  border-color: #ff6b6b;
+}
+
+.channel-logo {
+  width: 200px;
+  height: 200px;
+  border-radius: 100px;
+  object-fit: cover;
+  margin-bottom: 15px;
+}
+
+.channel-name {
+  font-size: 28px;
+  color: #ffffff;
+  text-align: center;
+  margin-bottom: 8px;
+  lines: 1;
+  text-overflow: ellipsis;
+}
+
+.channel-category {
+  font-size: 22px;
+  color: #999999;
+  text-align: center;
+}
+
+.loading,
+.empty {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading text,
+.empty text {
+  font-size: 32px;
+  color: #666666;
+}
+
+.footer {
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 100px;
+  background-color: #1a1a1a;
+  border-top-width: 1px;
+  border-top-color: #2a2a2a;
+}
+
+.footer-btn {
+  flex: 1;
+  height: 100px;
+  font-size: 28px;
+  color: #999999;
+  text-align: center;
+  lines: 1;
+}
+
+.footer-btn:focus {
+  background-color: #2a2a2a;
+}
+
+.footer-btn.active {
+  color: #ff6b6b;
+}
+</style>
+
+<script>
+import api from '../services/api.js'
+import router from '@system.router'
+
+export default {
+  data: {
+    searchKeyword: '',
+    categories: ['央视', '卫视', '地方', '体育', '新闻', '影视', '少儿', '其他'],
+    currentCategory: null,
+    channels: [],
+    loading: false
+  },
+
+  onInit() {
+    this.loadChannels()
+  },
+
+  async loadChannels() {
+    this.loading = true
+    try {
+      const response = await api.getLiveChannels(this.currentCategory)
+      this.channels = response.data || []
+    } catch (error) {
+      console.error('加载频道失败:', error)
+      this.channels = []
+    } finally {
+      this.loading = false
+    }
+  },
+
+  handleSearchInput(e) {
+    this.searchKeyword = e.value
+  },
+
+  async handleSearch() {
+    if (!this.searchKeyword.trim()) {
+      return
+    }
+    
+    this.loading = true
+    try {
+      const response = await api.searchLiveChannels(this.searchKeyword)
+      this.channels = response.data || []
+    } catch (error) {
+      console.error('搜索频道失败:', error)
+      this.channels = []
+    } finally {
+      this.loading = false
+    }
+  },
+
+  handleCategoryChange(category) {
+    this.currentCategory = category
+    this.loadChannels()
+  },
+
+  handleChannelClick(channel) {
+    router.push({
+      uri: 'pages/LivePlayer',
+      params: {
+        name: channel.name,
+        url: channel.url,
+        logo: channel.logo
+      }
+    })
+  },
+
+  handleBack() {
+    router.back()
+  },
+
+  handleTabChange(tab) {
+    if (tab === 'home') {
+      router.replace({ uri: 'pages/Home' })
+    } else if (tab === 'admin') {
+      router.push({ uri: 'pages/Admin' })
+    }
+  }
+}
+</script>

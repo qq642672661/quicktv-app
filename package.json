@@ -1,0 +1,20 @@
+{
+  "name": "maccms-quicktv-app",
+  "version": "1.0.0",
+  "description": "MacCMS QuickTV 电视盒子应用",
+  "main": "src/app.ux",
+  "scripts": {
+    "dev": "hap watch",
+    "build": "hap build",
+    "release": "hap build --release",
+    "server": "hap server",
+    "postinstall": "hap update"
+  },
+  "keywords": ["quicktv", "tv", "maccms", "iptv"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "hap-toolkit": "^0.6.0"
+  },
+  "dependencies": {}
+}

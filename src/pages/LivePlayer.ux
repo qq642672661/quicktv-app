@@ -1,0 +1,160 @@
+<template>
+  <div class="live-player-page">
+    <div class="header">
+      <text class="back-btn" onclick="handleBack" focusable="true">← 返回</text>
+      <image class="channel-logo" src="{{channelLogo || '/common/default-channel.png'}}" />
+      <text class="channel-name">{{channelName}}</text>
+    </div>
+
+    <div class="player-container">
+      <video
+        id="livePlayer"
+        src="{{channelUrl}}"
+        autoplay="true"
+        controls="true"
+        onprepared="handlePrepared"
+        onstart="handleStart"
+        onpause="handlePause"
+        onerror="handleError"
+      ></video>
+    </div>
+
+    <div class="error-message" if="{{errorMessage}}">
+      <text class="error-text">{{errorMessage}}</text>
+      <text class="retry-btn" onclick="handleRetry" focusable="true">重试</text>
+    </div>
+  </div>
+</template>
+
+<style>
+.live-player-page {
+  flex-direction: column;
+  width: 1920px;
+  height: 1080px;
+  background-color: #000000;
+}
+
+.header {
+  flex-direction: row;
+  align-items: center;
+  padding: 30px 60px;
+  background-color: #1a1a1a;
+}
+
+.back-btn {
+  font-size: 32px;
+  color: #ffffff;
+  padding: 10px 20px;
+  margin-right: 30px;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.back-btn:focus {
+  background-color: #ff6b6b;
+}
+
+.channel-logo {
+  width: 60px;
+  height: 60px;
+  border-radius: 30px;
+  margin-right: 20px;
+  object-fit: cover;
+}
+
+.channel-name {
+  font-size: 40px;
+  color: #ffffff;
+  font-weight: bold;
+}
+
+.player-container {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+  background-color: #000000;
+}
+
+.player-container video {
+  width: 1920px;
+  height: 980px;
+}
+
+.error-message {
+  position: absolute;
+  top: 540px;
+  left: 960px;
+  flex-direction: column;
+  align-items: center;
+  transform: translate(-50%, -50%);
+}
+
+.error-text {
+  font-size: 32px;
+  color: #ff6b6b;
+  margin-bottom: 20px;
+}
+
+.retry-btn {
+  padding: 15px 40px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+}
+
+.retry-btn:focus {
+  background-color: #ff5252;
+}
+</style>
+
+<script>
+import router from '@system.router'
+
+export default {
+  data: {
+    channelName: '',
+    channelUrl: '',
+    channelLogo: '',
+    errorMessage: ''
+  },
+
+  onInit() {
+    this.channelName = this.$page.params.name || '未知频道'
+    this.channelUrl = this.$page.params.url || ''
+    this.channelLogo = this.$page.params.logo || ''
+  },
+
+  handleBack() {
+    router.back()
+  },
+
+  handlePrepared() {
+    console.log('直播准备完成')
+    this.errorMessage = ''
+  },
+
+  handleStart() {
+    console.log('直播开始播放')
+    this.errorMessage = ''
+  },
+
+  handlePause() {
+    console.log('直播暂停')
+  },
+
+  handleError(e) {
+    console.error('直播播放错误:', e)
+    this.errorMessage = '播放失败，请检查网络或稍后重试'
+  },
+
+  handleRetry() {
+    this.errorMessage = ''
+    const url = this.channelUrl
+    this.channelUrl = ''
+    setTimeout(() => {
+      this.channelUrl = url
+    }, 100)
+  }
+}
+</script>

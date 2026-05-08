@@ -1,0 +1,75 @@
+{
+  "package": "com.maccms.quicktv",
+  "name": "MacCMS影视",
+  "versionName": "1.0.0",
+  "versionCode": 1,
+  "minPlatformVersion": 1080,
+  "icon": "/assets/logo.png",
+  "features": [
+    { "name": "system.network" },
+    { "name": "system.storage" },
+    { "name": "system.device" }
+  ],
+  "permissions": [
+    { "origin": "*" }
+  ],
+  "config": {
+    "logLevel": "debug",
+    "designWidth": 1920
+  },
+  "router": {
+    "entry": "pages/Home",
+    "pages": {
+      "pages/Home": {
+        "component": "home"
+      },
+      "pages/VideoDetail": {
+        "component": "video-detail"
+      },
+      "pages/Player": {
+        "component": "player"
+      },
+      "pages/Live": {
+        "component": "live"
+      },
+      "pages/Admin": {
+        "component": "admin"
+      },
+      "pages/AdminDashboard": {
+        "component": "admin-dashboard"
+      }
+    }
+  },
+  "display": {
+    "backgroundColor": "#000000",
+    "fullScreen": true,
+    "orientation": "landscape",
+    "pages": {
+      "pages/Home": {
+        "backgroundColor": "#000000",
+        "titleBarText": "MacCMS影视"
+      },
+      "pages/VideoDetail": {
+        "backgroundColor": "#000000",
+        "titleBarText": "视频详情"
+      },
+      "pages/Player": {
+        "backgroundColor": "#000000",
+        "titleBarText": "播放器",
+        "fullScreen": true
+      },
+      "pages/Live": {
+        "backgroundColor": "#000000",
+        "titleBarText": "直播"
+      },
+      "pages/Admin": {
+        "backgroundColor": "#1a1a1a",
+        "titleBarText": "后台登录"
+      },
+      "pages/AdminDashboard": {
+        "backgroundColor": "#1a1a1a",
+        "titleBarText": "后台管理"
+      }
+    }
+  }
+}

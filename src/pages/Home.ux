@@ -1,0 +1,401 @@
+<template>
+  <div class="home-page">
+    <div class="header">
+      <text class="title">MacCMS影视</text>
+      <div class="search-bar">
+        <input
+          type="text"
+          class="search-input"
+          placeholder="搜索影视剧..."
+          value="{{searchKeyword}}"
+          onchange="handleSearchInput"
+          focusable="true"
+        />
+        <text class="search-btn" onclick="handleSearch" focusable="true">搜索</text>
+      </div>
+      <div class="nav-menu">
+        <text
+          class="nav-item {{currentTypeId === null ? 'active' : ''}}"
+          onclick="handleTypeChange(null)"
+          focusable="true"
+        >全部</text>
+        <block for="{{types}}">
+          <text
+            class="nav-item {{currentTypeId === $item.id ? 'active' : ''}}"
+            onclick="handleTypeChange($item.id)"
+            focusable="true"
+          >{{$item.name}}</text>
+        </block>
+      </div>
+    </div>
+
+    <div class="content">
+      <div class="video-grid" if="{{!loading && videos.length > 0}}">
+        <block for="{{videos}}">
+          <div
+            class="video-card"
+            onclick="handleVideoClick($item.id)"
+            focusable="true"
+          >
+            <image class="video-poster" src="{{$item.vod_pic}}" />
+            <div class="video-info">
+              <text class="video-name">{{$item.vod_name}}</text>
+              <text class="video-remarks">{{$item.vod_remarks}}</text>
+            </div>
+          </div>
+        </block>
+      </div>
+
+      <div class="loading" if="{{loading}}">
+        <text>加载中...</text>
+      </div>
+
+      <div class="empty" if="{{!loading && videos.length === 0}}">
+        <text>暂无视频</text>
+      </div>
+
+      <div class="pagination" if="{{!loading && totalPages > 1}}">
+        <text
+          class="page-btn {{currentPage === 1 ? 'disabled' : ''}}"
+          onclick="handlePrevPage"
+          focusable="true"
+        >上一页</text>
+        <text class="page-info">{{currentPage}} / {{totalPages}}</text>
+        <text
+          class="page-btn {{currentPage === totalPages ? 'disabled' : ''}}"
+          onclick="handleNextPage"
+          focusable="true"
+        >下一页</text>
+      </div>
+    </div>
+
+    <div class="footer">
+      <text
+        class="footer-btn {{activeTab === 'home' ? 'active' : ''}}"
+        onclick="handleTabChange('home')"
+        focusable="true"
+      >首页</text>
+      <text
+        class="footer-btn {{activeTab === 'live' ? 'active' : ''}}"
+        onclick="handleTabChange('live')"
+        focusable="true"
+      >直播</text>
+      <text
+        class="footer-btn {{activeTab === 'admin' ? 'active' : ''}}"
+        onclick="handleTabChange('admin')"
+        focusable="true"
+      >管理</text>
+    </div>
+  </div>
+</template>
+
+<style>
+.home-page {
+  flex-direction: column;
+  width: 1920px;
+  height: 1080px;
+  background-color: #000000;
+}
+
+.header {
+  flex-direction: column;
+  padding: 30px 60px;
+  background-color: #1a1a1a;
+}
+
+.title {
+  font-size: 48px;
+  color: #ffffff;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+.search-bar {
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.search-input {
+  flex: 1;
+  height: 60px;
+  padding: 0 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+  border-width: 2px;
+  border-color: #3a3a3a;
+}
+
+.search-input:focus {
+  border-color: #ff6b6b;
+}
+
+.search-btn {
+  width: 120px;
+  height: 60px;
+  margin-left: 20px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  text-align: center;
+  lines: 1;
+}
+
+.search-btn:focus {
+  background-color: #ff5252;
+}
+
+.nav-menu {
+  flex-direction: row;
+  flex-wrap: wrap;
+}
+
+.nav-item {
+  padding: 15px 30px;
+  margin-right: 20px;
+  margin-bottom: 10px;
+  font-size: 28px;
+  color: #999999;
+  background-color: #2a2a2a;
+  border-radius: 8px;
+}
+
+.nav-item:focus {
+  background-color: #3a3a3a;
+  color: #ffffff;
+}
+
+.nav-item.active {
+  color: #ffffff;
+  background-color: #ff6b6b;
+}
+
+.content {
+  flex: 1;
+  flex-direction: column;
+  padding: 30px 60px;
+  overflow: hidden;
+}
+
+.video-grid {
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+}
+
+.video-card {
+  width: 280px;
+  margin-right: 30px;
+  margin-bottom: 30px;
+  border-radius: 8px;
+  overflow: hidden;
+  background-color: #1a1a1a;
+}
+
+.video-card:focus {
+  border-width: 3px;
+  border-color: #ff6b6b;
+}
+
+.video-poster {
+  width: 280px;
+  height: 400px;
+  object-fit: cover;
+}
+
+.video-info {
+  flex-direction: column;
+  padding: 15px;
+}
+
+.video-name {
+  font-size: 26px;
+  color: #ffffff;
+  lines: 2;
+  text-overflow: ellipsis;
+  margin-bottom: 8px;
+}
+
+.video-remarks {
+  font-size: 22px;
+  color: #999999;
+}
+
+.loading,
+.empty {
+  flex: 1;
+  justify-content: center;
+  align-items: center;
+}
+
+.loading text,
+.empty text {
+  font-size: 32px;
+  color: #666666;
+}
+
+.pagination {
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0;
+}
+
+.page-btn {
+  padding: 15px 40px;
+  font-size: 28px;
+  color: #ffffff;
+  background-color: #ff6b6b;
+  border-radius: 8px;
+  margin: 0 20px;
+}
+
+.page-btn:focus {
+  background-color: #ff5252;
+}
+
+.page-btn.disabled {
+  background-color: #3a3a3a;
+  color: #666666;
+}
+
+.page-info {
+  font-size: 28px;
+  color: #ffffff;
+}
+
+.footer {
+  flex-direction: row;
+  justify-content: space-around;
+  align-items: center;
+  height: 100px;
+  background-color: #1a1a1a;
+  border-top-width: 1px;
+  border-top-color: #2a2a2a;
+}
+
+.footer-btn {
+  flex: 1;
+  height: 100px;
+  font-size: 28px;
+  color: #999999;
+  text-align: center;
+  lines: 1;
+}
+
+.footer-btn:focus {
+  background-color: #2a2a2a;
+}
+
+.footer-btn.active {
+  color: #ff6b6b;
+}
+</style>
+
+<script>
+import api from '../services/api.js'
+import router from '@system.router'
+
+export default {
+  data: {
+    searchKeyword: '',
+    types: [],
+    currentTypeId: null,
+    videos: [],
+    loading: false,
+    currentPage: 1,
+    totalPages: 1,
+    activeTab: 'home'
+  },
+
+  onInit() {
+    this.loadTypes()
+    this.loadVideos()
+  },
+
+  async loadTypes() {
+    try {
+      const response = await api.getVideoTypes()
+      this.types = response.data || []
+    } catch (error) {
+      console.error('加载分类失败:', error)
+    }
+  },
+
+  async loadVideos() {
+    this.loading = true
+    try {
+      const response = await api.getVideos(this.currentPage, 20, this.currentTypeId)
+      this.videos = response.data || []
+      this.totalPages = response.totalPages || 1
+    } catch (error) {
+      console.error('加载视频失败:', error)
+      this.videos = []
+    } finally {
+      this.loading = false
+    }
+  },
+
+  handleSearchInput(e) {
+    this.searchKeyword = e.value
+  },
+
+  async handleSearch() {
+    if (!this.searchKeyword.trim()) {
+      return
+    }
+    
+    this.loading = true
+    try {
+      const response = await api.searchVideos(this.searchKeyword, 1, 20)
+      this.videos = response.data || []
+      this.totalPages = response.totalPages || 1
+      this.currentPage = 1
+    } catch (error) {
+      console.error('搜索失败:', error)
+      this.videos = []
+    } finally {
+      this.loading = false
+    }
+  },
+
+  handleTypeChange(typeId) {
+    this.currentTypeId = typeId
+    this.currentPage = 1
+    this.loadVideos()
+  },
+
+  handleVideoClick(videoId) {
+    router.push({
+      uri: 'pages/VideoDetail',
+      params: { id: videoId }
+    })
+  },
+
+  handlePrevPage() {
+    if (this.currentPage > 1) {
+      this.currentPage--
+      this.loadVideos()
+    }
+  },
+
+  handleNextPage() {
+    if (this.currentPage < this.totalPages) {
+      this.currentPage++
+      this.loadVideos()
+    }
+  },
+
+  handleTabChange(tab) {
+    this.activeTab = tab
+    if (tab === 'live') {
+      router.push({ uri: 'pages/Live' })
+    } else if (tab === 'admin') {
+      router.push({ uri: 'pages/Admin' })
+    }
+  }
+}
+</script>
