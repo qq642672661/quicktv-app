@@ -18,25 +18,22 @@
     "designWidth": 1920
   },
   "router": {
-    "entry": "pages/Home",
+    "entry": "Home",
     "pages": {
-      "pages/Home": {
-        "component": "home"
+      "Home": {
+        "component": "index"
       },
-      "pages/VideoDetail": {
-        "component": "video-detail"
+      "VideoDetail": {
+        "component": "index"
       },
-      "pages/Player": {
-        "component": "player"
+      "Live": {
+        "component": "index"
       },
-      "pages/Live": {
-        "component": "live"
+      "LivePlayer": {
+        "component": "index"
       },
-      "pages/Admin": {
-        "component": "admin"
-      },
-      "pages/AdminDashboard": {
-        "component": "admin-dashboard"
+      "Admin": {
+        "component": "index"
       }
     }
   },
@@ -45,30 +42,26 @@
     "fullScreen": true,
     "orientation": "landscape",
     "pages": {
-      "pages/Home": {
+      "Home": {
         "backgroundColor": "#000000",
         "titleBarText": "MacCMS影视"
       },
-      "pages/VideoDetail": {
+      "VideoDetail": {
         "backgroundColor": "#000000",
         "titleBarText": "视频详情"
       },
-      "pages/Player": {
+      "Live": {
+        "backgroundColor": "#000000",
+        "titleBarText": "直播"
+      },
+      "LivePlayer": {
         "backgroundColor": "#000000",
         "titleBarText": "播放器",
         "fullScreen": true
       },
-      "pages/Live": {
-        "backgroundColor": "#000000",
-        "titleBarText": "直播"
-      },
-      "pages/Admin": {
+      "Admin": {
         "backgroundColor": "#1a1a1a",
         "titleBarText": "后台登录"
-      },
-      "pages/AdminDashboard": {
-        "backgroundColor": "#1a1a1a",
-        "titleBarText": "后台管理"
       }
     }
   }
